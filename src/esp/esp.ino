@@ -221,7 +221,6 @@ void loop() {
   String dispDoor = (isDoor == 1) ? "OPEN [ALARM!]" : "CLOSED";
   if (isDoor == 1) hasAlarm = true;
 
-  // SỬA LỖI 2: ĐIỀU KHIỂN CÒI BÁO ĐỘNG NGẮT QUẢNG 1000ms CHUẨN XÁC
   if (hasAlarm) {
     // Khi vừa phát hiện sự cố lần đầu: Ép còi kêu NGAY LẬP TỨC và nhảy về Trang 1
     if (!previousAlarmState) {
