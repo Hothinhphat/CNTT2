@@ -1,3 +1,0 @@
-git add .
-git commit -m "lời nhắn"
-git push
