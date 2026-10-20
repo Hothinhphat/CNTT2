@@ -1,10 +1,6 @@
 // #include <splash.h>
 #include <ESP8266WiFi.h>
-<<<<<<< HEAD
 // #include <ESP8266WebServer.h>
-=======
-#include <ESP8266WebServer.h>
->>>>>>> c26fc535dd95bcd255f5812212a2638af4c148d1
 #include <WiFiManager.h>             // Thư viện WiFiManager (by tzapu)
 #include <WiFiClientSecure.h>
 #include <PubSubClient.h>
@@ -12,14 +8,9 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SH110X.h>            // Dùng cho màn hình OLED 1.3 inch
-<<<<<<< HEAD
 #include <LittleFS.h>                   // Thư viện quản lý bộ nhớ Flash
 
 // ================= CẤU HÌNH OLED 1.3" & CẢM BIẾN
-=======
-
-// ================= 1. CẤU HÌNH OLED 1.3" & CẢM BIẾN =================
->>>>>>> c26fc535dd95bcd255f5812212a2638af4c148d1
 #define OLED_RESET    -1
 #define i2c_Address   0x3c              // Địa chỉ I2C OLED (thường là 0x3C)
 #define SCREEN_WIDTH  128
@@ -36,11 +27,7 @@ Adafruit_SH1106G display = Adafruit_SH1106G(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, 
 
 DHT dht(DHTPIN, DHTTYPE);
 
-<<<<<<< HEAD
 //================= MẠNG & HIVEMQ CLOUD 
-=======
-// ================= 2. MẠNG & HIVEMQ CLOUD =================
->>>>>>> c26fc535dd95bcd255f5812212a2638af4c148d1
 const char* mqtt_server = "724ee7f0b4dc45f8b7b56148847ee0d6.s1.eu.hivemq.cloud"; 
 const int   mqtt_port   = 8883;                             
 const char* mqtt_user   = "hothinhphatvd4";                   
@@ -49,10 +36,6 @@ const char* mqtt_pass   = "Pmhh01947469";
 WiFiClientSecure espClient;
 PubSubClient client(espClient);
 
-<<<<<<< HEAD
-=======
-ESP8266WebServer server(80);
->>>>>>> c26fc535dd95bcd255f5812212a2638af4c148d1
 WiFiManager wm; // Biến WebPortal toàn cục
 
 // Biến quản lý trạng thái còi & Báo động
@@ -71,14 +54,9 @@ bool lastButtonState = HIGH;
 unsigned long lastDebounceTime = 0;
 unsigned long debounceDelay = 50;
 
-<<<<<<< HEAD
 // Biến quản lý WebPortal Song Song
 bool isPortalActive = false;
 unsigned long portalStartTime = 0;
-=======
-unsigned long lastDisplayUpdate = 0;
-unsigned long lastMqttSend = 0;
->>>>>>> c26fc535dd95bcd255f5812212a2638af4c148d1
 
 unsigned long lastDisplayUpdate = 0;
 unsigned long lastMqttSend = 0; //timer gửi lên server
@@ -87,7 +65,6 @@ unsigned long lastBufferSave = 0;//timer save khi mất điieenj
 String wifiErrorDetail = "OK";
 String mqttErrorDetail = "OK";
 
-<<<<<<< HEAD
 float temp = 0.0, hum = 0.0;
 int smokeAnalog = 0, isWater = 0, isDoor = 0;
 
@@ -143,9 +120,6 @@ void flushBufferToMQTT() {
 }
 
 // =================CHẨN ĐOÁN LỖI MẠNG
-=======
-// ================= 3. CHẨN ĐOÁN LỖI MẠNG =================
->>>>>>> c26fc535dd95bcd255f5812212a2638af4c148d1
 String getMQTTErrorString(int state) {
   switch (state) {
     case -4: return F("ERR_TIMEOUT(rc:-4)");
@@ -157,7 +131,6 @@ String getMQTTErrorString(int state) {
   }
 }
 
-<<<<<<< HEAD
 // =================CẤU HÌNH WIFIMANAGER & WEB OTA 
 void setupWiFiManager() {
   // Thời gian chờ trang cấu hình (10s kết nối, 20s phát AP)
@@ -166,32 +139,6 @@ void setupWiFiManager() {
   }
 
 // =================  ĐỌC NÚT BẤM ĐA NĂNG
-=======
-// ================= 4. CẤU HÌNH WIFIMANAGER & WEB OTA =================
-void setupWiFiManager() {
-  // Hiển thị nút bấm "Update Firmware" trực tiếp trên Menu chính
-  std::vector<const char *> menu = {"wifi", "update", "info", "exit"};
-  wm.setMenu(menu);  
-  // wm.setWebPortalClientCheck(true); //xác thực http
-  // wm.setConfigPortalPassword("12345678"); // Mật khẩu bảo vệ WebPortal
-
-  // Thời gian chờ trang cấu hình (10s kết nối, 20s phát AP)
-  wm.setConnectTimeout(10);
-  wm.setConfigPortalTimeout(20);
-
-  // Tên Wi-Fi AP phát ra khi chưa kết nối được mạng cũ
-  if (!wm.autoConnect("ESP8266_Server_Config", "12345678")) {
-    wifiErrorDetail = "AP Mode";
-    Serial.println(F("Co loi WiFi, dang chay che do Offline/AP..."));
-  } else {
-    wifiErrorDetail = "CONNECTED";
-    Serial.println(F("WiFi Connected Successfully!"));
-  }
-  wm.startWebPortal(); // Luôn duy trì WebPortal ngầm trên IP nội bộ
-}
-
-// ================= 5. ĐỌC NÚT BẤM ĐA NĂNG =================
->>>>>>> c26fc535dd95bcd255f5812212a2638af4c148d1
 void checkButton() {
   bool reading = digitalRead(BUTTON_PIN);
   if (reading != lastButtonState) {
@@ -209,7 +156,6 @@ void checkButton() {
         pressStartTime = millis(); 
       } else { 
         unsigned long pressDuration = millis() - pressStartTime;
-<<<<<<< HEAD
         // NHẤN GIỮ > 5s: Phát AP & Bật WebPortal
         if (pressDuration >= 5000) {
           // cấu hình menu
@@ -229,13 +175,6 @@ void checkButton() {
           display.println(F("Timeout: 5 Mins"));
           display.display();
           delay(3000); // Tạm dừng3s để người dùng kịp đọc dòng chữ
-=======
-
-        if (pressDuration >= 5000) {
-          // NHẤN GIỮ > 5s: Xóa Wi-Fi cũ và mở lại Portal Cấu hình Web
-          wm.resetSettings();
-          ESP.restart();
->>>>>>> c26fc535dd95bcd255f5812212a2638af4c148d1
         } else if (pressDuration >= 1500) {
           // NHẤN GIỮ > 1.5s: Bật/Tắt Còi tạm thời 15 phút (Mute Mode)
           isMuted = !isMuted;
@@ -251,11 +190,7 @@ void checkButton() {
   lastButtonState = reading;
 }
 
-<<<<<<< HEAD
 // =================KẾT NỐI HIVEMQ CLOUD (SSL/TLS + LWT)
-=======
-// ================= 6. KẾT NỐI HIVEMQ CLOUD (SSL/TLS + LWT) =================
->>>>>>> c26fc535dd95bcd255f5812212a2638af4c148d1
 bool reconnectMQTT() {
   client.setKeepAlive(15);
   String clientId = "ESP8266_Server_" + String(ESP.getChipId());
@@ -286,10 +221,6 @@ void setup() {
   }
   
   // 1. Tắt còi ngay từ khi mở nguồn (Active LOW)
-<<<<<<< HEAD
-=======
-  digitalWrite(BUZZER_PIN, HIGH);
->>>>>>> c26fc535dd95bcd255f5812212a2638af4c148d1
   pinMode(BUZZER_PIN, OUTPUT);
   digitalWrite(BUZZER_PIN, HIGH);
 
@@ -308,13 +239,8 @@ void setup() {
   display.println(F("Warming up sensors.."));
   display.display();
 
-<<<<<<< HEAD
   // Chờ 5s ổn định nguồn & dây sấy MQ-2
   delay(5000);
-=======
-  // Chờ 3s ổn định nguồn & dây sấy MQ-2
-  delay(10000);
->>>>>>> c26fc535dd95bcd255f5812212a2638af4c148d1
   dht.begin();
   
   // 3. Cấu hình Wi-Fi & Tối ưu RAM SSL 
@@ -325,7 +251,6 @@ void setup() {
   espClient.setInsecure();
   espClient.setBufferSizes(512, 512); // Tối ưu buffer SSL giúp dư ra ~10KB RAM
 
-<<<<<<< HEAD
   // Cập nhật màn hình báo đang kết nối Wi-Fi
   // mới bật là hiển thị đang kết nối wifi.
   display.setCursor(10, 50);
@@ -333,28 +258,12 @@ void setup() {
   display.display();
   // 4. Khởi chạy WiFiManager để tự kết nối wifi đã lưu
   setupWiFiManager();
-=======
-  // Cập nhật màn hình báo đang nối Wi-Fi
-  display.setCursor(10, 50);
-  display.println(F("Connecting WiFi..."));
-  display.display();
-
-  // 4. Khởi chạy WiFiManager
-
-  
-  setupWiFiManager();
-  
-
-  server.begin();
-
->>>>>>> c26fc535dd95bcd255f5812212a2638af4c148d1
   // 6. Cấu hình MQTT Client
   client.setServer(mqtt_server, mqtt_port);
 }
 
 // ================= 8. LUỒNG CHÍNH (LOOP) =================
 void loop() {
-<<<<<<< HEAD
   // Duy trì webportal khi được bật
   if (isPortalActive) {
     wm.process(); // Xử lý request từ trình duyệt web
@@ -366,11 +275,6 @@ void loop() {
       Serial.println(F("Da het 5 phut! Tu dong dong WebPortal."));
     }
   }
-=======
-  // Duy trì WebPortal
-  wm.process();
-
->>>>>>> c26fc535dd95bcd255f5812212a2638af4c148d1
   // 1. Quét nút bấm đa năng liên tục
   checkButton();
 
@@ -406,10 +310,7 @@ void loop() {
   }
 
   // 3. Đọc dữ liệu cảm biến & Xử lý Logic Báo động
-<<<<<<< HEAD
   // đọc cảm biến  2s / 1 lần
-=======
->>>>>>> c26fc535dd95bcd255f5812212a2638af4c148d1
   bool hasAlarm = false;
   if (millis() - lastSensorRead > 2000) {
     lastSensorRead = millis();
@@ -443,10 +344,6 @@ void loop() {
   }
 
   // --- B. KHÓI (MQ-2 Analog A0) ---
-<<<<<<< HEAD
-=======
-  int smokeAnalog = analogRead(SMOKE_AO);
->>>>>>> c26fc535dd95bcd255f5812212a2638af4c148d1
   int sendSmoke = 0;
   String dispSmoke = "OK";
   
@@ -461,18 +358,10 @@ void loop() {
   }
 
   // --- C. RÒ NƯỚC (Digital D6) ---
-<<<<<<< HEAD
-=======
-  int isWater = (digitalRead(WATER_PIN) == LOW) ? 1 : 0;
->>>>>>> c26fc535dd95bcd255f5812212a2638af4c148d1
   String dispWater = (isWater == 1) ? "ALARM!" : "OK";
   if (isWater == 1) hasAlarm = true;
 
   // --- D. CỬA TỪ (Digital D5) ---
-<<<<<<< HEAD
-=======
-  int isDoor = (digitalRead(DOOR_PIN) == HIGH) ? 1 : 0;
->>>>>>> c26fc535dd95bcd255f5812212a2638af4c148d1
   String dispDoor = (isDoor == 1) ? "OPEN [ALARM!]" : "CLOSED";
   if (isDoor == 1) hasAlarm = true;
 
@@ -497,7 +386,6 @@ void loop() {
   previousAlarmState = hasAlarm;
 
   // 5. GỬI DỮ LIỆU LÊN HIVE MQ CLOUD (2s/lần)
-<<<<<<< HEAD
   if (client.connected()){
     if (millis() - lastMqttSend > 2000){
       lastMqttSend = millis();
@@ -522,17 +410,6 @@ void loop() {
 
       saveTelemetryToBuffer(jsonPayload);
     }
-=======
-  if (client.connected() && (millis() - lastMqttSend > 2000)) {
-    lastMqttSend = millis();
-
-    char jsonPayload[160];
-    snprintf(jsonPayload, sizeof(jsonPayload),
-      "{\"temp\":%.1f,\"hum\":%.1f,\"water\":%d,\"smoke\":%d,\"door\":%d,\"heap\":%u}",
-      sendTemp, sendHum, isWater, sendSmoke, isDoor, ESP.getFreeHeap());
-
-    client.publish("server/telemetry", jsonPayload);
->>>>>>> c26fc535dd95bcd255f5812212a2638af4c148d1
   }
 
   // 6. HIỂN THỊ OLED 1.3" (200ms/lần)
