@@ -1,6 +1,6 @@
-#include <splash.h>
+// #include <splash.h>
 #include <ESP8266WiFi.h>
-#include <ESP8266WebServer.h>
+// #include <ESP8266WebServer.h>
 #include <WiFiManager.h>             // Thư viện WiFiManager (by tzapu)
 #include <WiFiClientSecure.h>
 #include <PubSubClient.h>
@@ -8,8 +8,9 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SH110X.h>            // Dùng cho màn hình OLED 1.3 inch
+#include <LittleFS.h>                   // Thư viện quản lý bộ nhớ Flash
 
-// ================= 1. CẤU HÌNH OLED 1.3" & CẢM BIẾN =================
+// ================= CẤU HÌNH OLED 1.3" & CẢM BIẾN
 #define OLED_RESET    -1
 #define i2c_Address   0x3c              // Địa chỉ I2C OLED (thường là 0x3C)
 #define SCREEN_WIDTH  128
@@ -26,7 +27,7 @@ Adafruit_SH1106G display = Adafruit_SH1106G(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, 
 
 DHT dht(DHTPIN, DHTTYPE);
 
-// ================= 2. MẠNG & HIVEMQ CLOUD =================
+//================= MẠNG & HIVEMQ CLOUD 
 const char* mqtt_server = "724ee7f0b4dc45f8b7b56148847ee0d6.s1.eu.hivemq.cloud"; 
 const int   mqtt_port   = 8883;                             
 const char* mqtt_user   = "hothinhphatvd4";                   
@@ -35,7 +36,6 @@ const char* mqtt_pass   = "Pmhh01947469";
 WiFiClientSecure espClient;
 PubSubClient client(espClient);
 
-ESP8266WebServer server(80);
 WiFiManager wm; // Biến WebPortal toàn cục
 
 // Biến quản lý trạng thái còi & Báo động
@@ -54,13 +54,72 @@ bool lastButtonState = HIGH;
 unsigned long lastDebounceTime = 0;
 unsigned long debounceDelay = 50;
 
-unsigned long lastDisplayUpdate = 0;
-unsigned long lastMqttSend = 0;
+// Biến quản lý WebPortal Song Song
+bool isPortalActive = false;
+unsigned long portalStartTime = 0;
 
+unsigned long lastDisplayUpdate = 0;
+unsigned long lastMqttSend = 0; //timer gửi lên server
+unsigned long lastSensorRead = 0;// timer đọc cảm biến 
+unsigned long lastBufferSave = 0;//timer save khi mất điieenj
 String wifiErrorDetail = "OK";
 String mqttErrorDetail = "OK";
 
-// ================= 3. CHẨN ĐOÁN LỖI MẠNG =================
+float temp = 0.0, hum = 0.0;
+int smokeAnalog = 0, isWater = 0, isDoor = 0;
+
+// ================= LƯU ĐỆM OFFLINE
+const char* BUFFER_FILE = "/mqtt_buffer.txt";
+const size_t MAX_BUFFER_SIZE = 500 * 1024; // Giới hạn 500KB cho file đệm
+
+void saveTelemetryToBuffer(const char* payload) {
+  if (LittleFS.exists(BUFFER_FILE)) {
+    File checkFile = LittleFS.open(BUFFER_FILE, "r");
+    if (checkFile && checkFile.size() > MAX_BUFFER_SIZE) {
+      checkFile.close();
+      // Serial.println(F("Bo nho dem LittleFS da day 500KB!"));
+      return;
+    }
+    if (checkFile) checkFile.close();
+  }
+
+  File file = LittleFS.open(BUFFER_FILE, "a");
+  if (file) {
+    file.println(payload);
+    file.close();
+    // Serial.println(F("Da luu ban ghi telemetry vao Flash LittleFS (Offline)."));
+  }
+}
+
+void flushBufferToMQTT() {
+  if (!LittleFS.exists(BUFFER_FILE)) return;
+
+  File file = LittleFS.open(BUFFER_FILE, "r");
+  if (!file) return;
+
+  Serial.println(F("Dang day bu du lieu tu LittleFS len HiveMQ..."));
+
+  while (file.available()) {
+    String line = file.readStringUntil('\n');
+    line.trim();
+
+    if (line.length() > 0 && client.connected()) {
+      // Đóng gói mốc push_m tại thời điểm gửi bù để Node-RED tính ngược thời gian
+      String offlinePayload = "{\"data\":" + line + ",\"push_m\":" + String(millis()) + "}";
+
+      client.publish("server/telemetry_offline", offlinePayload.c_str());
+      client.loop();
+      delay(50); // Tránh ngợp Broker
+    }
+  }
+  file.close();
+
+  // Xóa file đệm sau khi đã đẩy bù xong
+  LittleFS.remove(BUFFER_FILE);
+  // Serial.println(F("Da xoa file dem LittleFS sau khi day bu thanh cong!"));
+}
+
+// =================CHẨN ĐOÁN LỖI MẠNG
 String getMQTTErrorString(int state) {
   switch (state) {
     case -4: return F("ERR_TIMEOUT(rc:-4)");
@@ -72,30 +131,14 @@ String getMQTTErrorString(int state) {
   }
 }
 
-// ================= 4. CẤU HÌNH WIFIMANAGER & WEB OTA =================
+// =================CẤU HÌNH WIFIMANAGER & WEB OTA 
 void setupWiFiManager() {
-  // Hiển thị nút bấm "Update Firmware" trực tiếp trên Menu chính
-  std::vector<const char *> menu = {"wifi", "update", "info", "exit"};
-  wm.setMenu(menu);  
-  // wm.setWebPortalClientCheck(true); //xác thực http
-  // wm.setConfigPortalPassword("12345678"); // Mật khẩu bảo vệ WebPortal
-
   // Thời gian chờ trang cấu hình (10s kết nối, 20s phát AP)
-  wm.setConnectTimeout(10);
-  wm.setConfigPortalTimeout(20);
-
-  // Tên Wi-Fi AP phát ra khi chưa kết nối được mạng cũ
-  if (!wm.autoConnect("ESP8266_Server_Config", "12345678")) {
-    wifiErrorDetail = "AP Mode";
-    Serial.println(F("Co loi WiFi, dang chay che do Offline/AP..."));
-  } else {
-    wifiErrorDetail = "CONNECTED";
-    Serial.println(F("WiFi Connected Successfully!"));
+  wm.setConnectTimeout(15);
+  wm.autoConnect("ESP8266_Server_Config", "12345678");
   }
-  wm.startWebPortal(); // Luôn duy trì WebPortal ngầm trên IP nội bộ
-}
 
-// ================= 5. ĐỌC NÚT BẤM ĐA NĂNG =================
+// =================  ĐỌC NÚT BẤM ĐA NĂNG
 void checkButton() {
   bool reading = digitalRead(BUTTON_PIN);
   if (reading != lastButtonState) {
@@ -113,11 +156,25 @@ void checkButton() {
         pressStartTime = millis(); 
       } else { 
         unsigned long pressDuration = millis() - pressStartTime;
-
+        // NHẤN GIỮ > 5s: Phát AP & Bật WebPortal
         if (pressDuration >= 5000) {
-          // NHẤN GIỮ > 5s: Xóa Wi-Fi cũ và mở lại Portal Cấu hình Web
-          wm.resetSettings();
-          ESP.restart();
+          // cấu hình menu
+          std::vector<const char *> menu = {"wifi", "update", "info", "exit"};
+          wm.setMenu(menu);
+          wm.setConfigPortalTimeout(300);// bật webportal trong 5p
+          wm.startWebPortal(); // Bật WebPortal ngầm non-blocking
+          isPortalActive = true;
+          portalStartTime = millis();
+          // Hiển thị thông báo trên màn hình OLED
+          display.clearDisplay();
+          display.setCursor(0, 15);
+          display.println(F("WEBPORTAL STARTED!"));
+          display.setCursor(0, 30);
+          display.println(F("AP: ESP8266_Server"));
+          display.setCursor(0, 45);
+          display.println(F("Timeout: 5 Mins"));
+          display.display();
+          delay(3000); // Tạm dừng3s để người dùng kịp đọc dòng chữ
         } else if (pressDuration >= 1500) {
           // NHẤN GIỮ > 1.5s: Bật/Tắt Còi tạm thời 15 phút (Mute Mode)
           isMuted = !isMuted;
@@ -133,7 +190,7 @@ void checkButton() {
   lastButtonState = reading;
 }
 
-// ================= 6. KẾT NỐI HIVEMQ CLOUD (SSL/TLS + LWT) =================
+// =================KẾT NỐI HIVEMQ CLOUD (SSL/TLS + LWT)
 bool reconnectMQTT() {
   client.setKeepAlive(15);
   String clientId = "ESP8266_Server_" + String(ESP.getChipId());
@@ -144,6 +201,8 @@ bool reconnectMQTT() {
   if (client.connect(clientId.c_str(), mqtt_user, mqtt_pass, willTopic, 1, true, willMessage)) {
     client.publish("server/status", "ONLINE", true);
     mqttErrorDetail = "ONLINE (OK)";
+    // Đẩy bù toàn bộ dữ liệu Offline đã lưu trong LittleFS lên Cloud
+    flushBufferToMQTT();
     return true;
   } else {
     mqttErrorDetail = getMQTTErrorString(client.state());
@@ -154,10 +213,16 @@ bool reconnectMQTT() {
 // ================= 7. KHỞI TẠO (SETUP) =================
 void setup() {
   Serial.begin(9600);
+
+  if (!LittleFS.begin()) {
+    // Serial.println(F("Loi Mount LittleFS! Tien hanh Format..."));
+    LittleFS.format();
+    LittleFS.begin();
+  }
   
   // 1. Tắt còi ngay từ khi mở nguồn (Active LOW)
-  digitalWrite(BUZZER_PIN, HIGH);
   pinMode(BUZZER_PIN, OUTPUT);
+  digitalWrite(BUZZER_PIN, HIGH);
 
   pinMode(BUTTON_PIN, INPUT_PULLUP);
   pinMode(WATER_PIN, INPUT_PULLUP);
@@ -174,8 +239,8 @@ void setup() {
   display.println(F("Warming up sensors.."));
   display.display();
 
-  // Chờ 3s ổn định nguồn & dây sấy MQ-2
-  delay(10000);
+  // Chờ 5s ổn định nguồn & dây sấy MQ-2
+  delay(5000);
   dht.begin();
   
   // 3. Cấu hình Wi-Fi & Tối ưu RAM SSL 
@@ -186,28 +251,30 @@ void setup() {
   espClient.setInsecure();
   espClient.setBufferSizes(512, 512); // Tối ưu buffer SSL giúp dư ra ~10KB RAM
 
-  // Cập nhật màn hình báo đang nối Wi-Fi
+  // Cập nhật màn hình báo đang kết nối Wi-Fi
+  // mới bật là hiển thị đang kết nối wifi.
   display.setCursor(10, 50);
   display.println(F("Connecting WiFi..."));
   display.display();
-
-  // 4. Khởi chạy WiFiManager
-
-  
+  // 4. Khởi chạy WiFiManager để tự kết nối wifi đã lưu
   setupWiFiManager();
-  
-
-  server.begin();
-
   // 6. Cấu hình MQTT Client
   client.setServer(mqtt_server, mqtt_port);
 }
 
 // ================= 8. LUỒNG CHÍNH (LOOP) =================
 void loop() {
-  // Duy trì WebPortal
-  wm.process();
-
+  // Duy trì webportal khi được bật
+  if (isPortalActive) {
+    wm.process(); // Xử lý request từ trình duyệt web
+    
+    // Tự động tắt WebPortal sau 5 phút (300,000 ms)
+    if (millis() - portalStartTime > 300000) {
+      isPortalActive = false;
+      wm.stopWebPortal();
+      Serial.println(F("Da het 5 phut! Tu dong dong WebPortal."));
+    }
+  }
   // 1. Quét nút bấm đa năng liên tục
   checkButton();
 
@@ -243,12 +310,17 @@ void loop() {
   }
 
   // 3. Đọc dữ liệu cảm biến & Xử lý Logic Báo động
+  // đọc cảm biến  2s / 1 lần
   bool hasAlarm = false;
-
+  if (millis() - lastSensorRead > 2000) {
+    lastSensorRead = millis();
+    temp = dht.readTemperature();
+    hum  = dht.readHumidity();
+    smokeAnalog = analogRead(SMOKE_AO);
+    isWater = (digitalRead(WATER_PIN) == LOW) ? 1 : 0;
+    isDoor = (digitalRead(DOOR_PIN) == HIGH) ? 1 : 0;
+  }
   // --- A. NHIỆT ĐỘ & ĐỘ ẨM (DHT11) ---
-  float temp = dht.readTemperature();
-  float hum  = dht.readHumidity();
-
   float sendTemp = isnan(temp) ? -999.0 : temp;
   float sendHum  = isnan(hum)  ? -999.0 : hum;
 
@@ -272,7 +344,6 @@ void loop() {
   }
 
   // --- B. KHÓI (MQ-2 Analog A0) ---
-  int smokeAnalog = analogRead(SMOKE_AO);
   int sendSmoke = 0;
   String dispSmoke = "OK";
   
@@ -287,12 +358,10 @@ void loop() {
   }
 
   // --- C. RÒ NƯỚC (Digital D6) ---
-  int isWater = (digitalRead(WATER_PIN) == LOW) ? 1 : 0;
   String dispWater = (isWater == 1) ? "ALARM!" : "OK";
   if (isWater == 1) hasAlarm = true;
 
   // --- D. CỬA TỪ (Digital D5) ---
-  int isDoor = (digitalRead(DOOR_PIN) == HIGH) ? 1 : 0;
   String dispDoor = (isDoor == 1) ? "OPEN [ALARM!]" : "CLOSED";
   if (isDoor == 1) hasAlarm = true;
 
@@ -306,8 +375,8 @@ void loop() {
     } else {
       if (millis() - lastBuzzerToggle > 2000) {
         lastBuzzerToggle = millis();
-        buzzerState = !buzzerState;
-        digitalWrite(BUZZER_PIN, buzzerState ? HIGH : LOW);
+        buzzerState = (buzzerState == LOW) ? HIGH : LOW;
+        digitalWrite(BUZZER_PIN, buzzerState);
       }
     }
   } else {
@@ -317,15 +386,30 @@ void loop() {
   previousAlarmState = hasAlarm;
 
   // 5. GỬI DỮ LIỆU LÊN HIVE MQ CLOUD (2s/lần)
-  if (client.connected() && (millis() - lastMqttSend > 2000)) {
-    lastMqttSend = millis();
+  if (client.connected()){
+    if (millis() - lastMqttSend > 2000){
+      lastMqttSend = millis();
 
     char jsonPayload[160];
     snprintf(jsonPayload, sizeof(jsonPayload),
-      "{\"temp\":%.1f,\"hum\":%.1f,\"water\":%d,\"smoke\":%d,\"door\":%d,\"heap\":%u}",
-      sendTemp, sendHum, isWater, sendSmoke, isDoor, ESP.getFreeHeap());
+      "{\"temp\":%.1f,\"hum\":%.1f,\"water\":%d,\"smoke\":%d,\"door\":%d}",
+      sendTemp, sendHum, isWater, sendSmoke, isDoor);
 
     client.publish("server/telemetry", jsonPayload);
+    }
+  } else {
+    // mất mạng, lưu vào flash
+    if (millis() - lastBufferSave > 30000) {
+      lastBufferSave = millis();
+
+      char jsonPayload[180];
+      // Đóng gói thêm mốc millis() tại biến "m" để Node-RED tính ngược thời gian
+      snprintf(jsonPayload, sizeof(jsonPayload),
+        "{\"temp\":%.1f,\"hum\":%.1f,\"water\":%d,\"smoke\":%d,\"door\":%d,\"m\":%lu}",
+        sendTemp, sendHum, isWater, sendSmoke, isDoor, millis());
+
+      saveTelemetryToBuffer(jsonPayload);
+    }
   }
 
   // 6. HIỂN THỊ OLED 1.3" (200ms/lần)
