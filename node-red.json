@@ -113,7 +113,7 @@
     {
         "id": "37b1e7d6d8577c31",
         "type": "ui-page",
-        "name": "Page 1",
+        "name": "Giám sát môi trường phòng server",
         "ui": "1087d7169ffd9025",
         "path": "/page1",
         "icon": "home",
@@ -150,12 +150,12 @@
     {
         "id": "dcc2d27aa03da79b",
         "type": "ui-group",
-        "name": "iot",
+        "name": "Thông số theo dõi",
         "page": "37b1e7d6d8577c31",
-        "width": 6,
+        "width": "2",
         "height": 1,
         "order": 1,
-        "showTitle": true,
+        "showTitle": false,
         "className": "",
         "visible": "true",
         "disabled": "false",
@@ -319,6 +319,100 @@
         "sessionExpiry": ""
     },
     {
+        "id": "529c2bae123e0c40",
+        "type": "telegram bot",
+        "botname": "IOT Alert",
+        "usernames": "",
+        "chatids": "",
+        "baseapiurl": "",
+        "testenvironment": false,
+        "updatemode": "polling",
+        "pollinterval": 300,
+        "usesocks": false,
+        "sockshost": "",
+        "socksprotocol": "socks5",
+        "socksport": 6667,
+        "socksusername": "anonymous",
+        "sockspassword": "",
+        "bothost": "",
+        "botpath": "",
+        "localbothost": "0.0.0.0",
+        "localbotport": 8443,
+        "publicbotport": 8443,
+        "privatekey": "",
+        "certificate": "",
+        "useselfsignedcertificate": false,
+        "sslterminated": false,
+        "verboselogging": false
+    },
+    {
+        "id": "22b03b5845a2b940",
+        "type": "tls-config",
+        "name": "",
+        "certType": "files",
+        "cert": "",
+        "key": "",
+        "p12": "",
+        "p12name": "",
+        "ca": "",
+        "certname": "",
+        "keyname": "",
+        "caname": "",
+        "servername": "",
+        "verifyservercert": true,
+        "alpnprotocol": "",
+        "certEnv": "",
+        "keyEnv": "",
+        "caEnv": ""
+    },
+    {
+        "id": "20058de8f04d2f5b",
+        "type": "mqtt-broker",
+        "name": "",
+        "broker": "724ee7f0b4dc45f8b7b56148847ee0d6.s1.eu.hivemq.cloud",
+        "port": "8883",
+        "tls": "22b03b5845a2b940",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": true,
+        "protocolVersion": 4,
+        "keepalive": 60,
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "eb3572f642abb2d1",
+        "type": "ui-group",
+        "name": "Biểu đồ",
+        "page": "37b1e7d6d8577c31",
+        "width": "10",
+        "height": 1,
+        "order": 2,
+        "showTitle": false,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default",
+        "tab": ""
+    },
+    {
         "id": "b8f1aa2d550f2a9a",
         "type": "mongodb4",
         "z": "d1bcfc142b428bb6",
@@ -335,7 +429,14 @@
         "wires": [
             [
                 "adc3fa281aced5aa",
-                "644ab4b3517a5b58"
+                "644ab4b3517a5b58",
+                "96e4a330c84a059a",
+                "494eebfb7a9ed9be",
+                "08abc1d35a3b5aa7",
+                "9fbd843c6f67c29b",
+                "758ec4cc698c41fb",
+                "3f6abf9f7eb9099d",
+                "0c480f4d410c6701"
             ]
         ]
     },
@@ -344,81 +445,19 @@
         "type": "function",
         "z": "d1bcfc142b428bb6",
         "name": "set X, Y",
-        "func": "\nlet chartData = [];\n\nmsg.payload.forEach(item => {\n    chartData.push({\n        x: item.time, \n        y: item.temp                       \n    });\n});\n\nmsg.payload = chartData;\n\nreturn msg;",
+        "func": "let chartData = [];\n\nmsg.payload.forEach(item => {\n    chartData.push({\n        x: item.time, \n        y: item.temp                       \n    });\n});\n\nmsg.payload = chartData;\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1040,
-        "y": 280,
+        "x": 1140,
+        "y": 240,
         "wires": [
             [
-                "482544ab791bfaf6"
+                "97acfad1dfc3d72f"
             ]
-        ]
-    },
-    {
-        "id": "482544ab791bfaf6",
-        "type": "ui-chart",
-        "z": "d1bcfc142b428bb6",
-        "group": "dcc2d27aa03da79b",
-        "name": "",
-        "label": "Temp chart",
-        "order": 2,
-        "chartType": "line",
-        "category": "topic",
-        "categoryType": "msg",
-        "xAxisLabel": "Time",
-        "xAxisProperty": "x",
-        "xAxisPropertyType": "property",
-        "xAxisType": "time",
-        "xAxisFormat": "",
-        "xAxisFormatType": "auto",
-        "xmin": "",
-        "xmax": "",
-        "yAxisLabel": "Temp",
-        "yAxisProperty": "y",
-        "yAxisPropertyType": "property",
-        "ymin": "",
-        "ymax": "",
-        "bins": 10,
-        "action": "append",
-        "stackSeries": false,
-        "pointShape": "circle",
-        "pointRadius": 4,
-        "showLegend": true,
-        "removeOlder": "1",
-        "removeOlderUnit": "1",
-        "removeOlderPoints": "10",
-        "colors": [
-            "#0095ff",
-            "#ff0000",
-            "#ff7f0e",
-            "#2ca02c",
-            "#a347e1",
-            "#d62728",
-            "#ff9896",
-            "#9467bd",
-            "#c5b0d5"
-        ],
-        "textColor": [
-            "#666666"
-        ],
-        "textColorDefault": true,
-        "gridColor": [
-            "#e5e5e5"
-        ],
-        "gridColorDefault": true,
-        "width": 6,
-        "height": 8,
-        "className": "",
-        "interpolation": "linear",
-        "x": 1210,
-        "y": 280,
-        "wires": [
-            []
         ]
     },
     {
@@ -482,8 +521,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 980,
-        "y": 380,
+        "x": 1160,
+        "y": 400,
         "wires": [
             [
                 "ce2fadc0efb284c6"
@@ -495,14 +534,352 @@
         "type": "ui-text",
         "z": "d1bcfc142b428bb6",
         "group": "dcc2d27aa03da79b",
-        "order": 1,
+        "order": 2,
         "width": 0,
         "height": 0,
         "name": "",
-        "label": "Current temp",
+        "label": "Nhiệt độ:",
         "format": "{{msg.payload}}",
         "layout": "row-spread",
-        "style": false,
+        "style": true,
+        "font": "",
+        "fontSize": 16,
+        "color": "#787878",
+        "wrapText": false,
+        "className": "",
+        "value": "payload",
+        "valueType": "msg",
+        "x": 1340,
+        "y": 400,
+        "wires": []
+    },
+    {
+        "id": "96e4a330c84a059a",
+        "type": "function",
+        "z": "d1bcfc142b428bb6",
+        "name": "set X, Y",
+        "func": "let chartData = [];\n\nmsg.payload.forEach(item => {\n    chartData.push({\n        x: item.time,\n        y: item.hum\n    });\n});\n\nmsg.payload = chartData;\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1140,
+        "y": 180,
+        "wires": [
+            [
+                "355a8556a831a407"
+            ]
+        ]
+    },
+    {
+        "id": "494eebfb7a9ed9be",
+        "type": "function",
+        "z": "d1bcfc142b428bb6",
+        "name": "get latest humid",
+        "func": "let latest_temp = msg.payload[0].hum\n\nmsg.payload = latest_temp\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1160,
+        "y": 460,
+        "wires": [
+            [
+                "7f9348b185556f9e"
+            ]
+        ]
+    },
+    {
+        "id": "7f9348b185556f9e",
+        "type": "ui-text",
+        "z": "d1bcfc142b428bb6",
+        "group": "dcc2d27aa03da79b",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "Độ ẩm:",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "style": true,
+        "font": "",
+        "fontSize": 16,
+        "color": "#787878",
+        "wrapText": false,
+        "className": "",
+        "value": "payload",
+        "valueType": "msg",
+        "x": 1340,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "355a8556a831a407",
+        "type": "ui-chart",
+        "z": "d1bcfc142b428bb6",
+        "group": "eb3572f642abb2d1",
+        "name": "",
+        "label": "Độ ẩm",
+        "order": 2,
+        "chartType": "line",
+        "category": "topic",
+        "categoryType": "msg",
+        "xAxisLabel": "Time",
+        "xAxisProperty": "x",
+        "xAxisPropertyType": "property",
+        "xAxisType": "time",
+        "xAxisFormat": "",
+        "xAxisFormatType": "auto",
+        "xmin": "",
+        "xmax": "",
+        "yAxisLabel": "Độ ẩm",
+        "yAxisProperty": "y",
+        "yAxisPropertyType": "property",
+        "ymin": "",
+        "ymax": "",
+        "bins": 10,
+        "action": "append",
+        "stackSeries": false,
+        "pointShape": "circle",
+        "pointRadius": 4,
+        "showLegend": true,
+        "removeOlder": 1,
+        "removeOlderUnit": "3600",
+        "removeOlderPoints": "20",
+        "colors": [
+            "#0095ff",
+            "#ff0000",
+            "#ff7f0e",
+            "#2ca02c",
+            "#a347e1",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "textColor": [
+            "#666666"
+        ],
+        "textColorDefault": true,
+        "gridColor": [
+            "#e5e5e5"
+        ],
+        "gridColorDefault": true,
+        "width": "5",
+        "height": 8,
+        "className": "",
+        "interpolation": "linear",
+        "x": 1290,
+        "y": 180,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "08abc1d35a3b5aa7",
+        "type": "function",
+        "z": "d1bcfc142b428bb6",
+        "name": "get latest smoke",
+        "func": "let latest_temp = msg.payload[0].smoke\n\nmsg.payload = latest_temp\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1160,
+        "y": 520,
+        "wires": [
+            [
+                "ca0f2698c140e27a"
+            ]
+        ]
+    },
+    {
+        "id": "ca0f2698c140e27a",
+        "type": "ui-text",
+        "z": "d1bcfc142b428bb6",
+        "group": "dcc2d27aa03da79b",
+        "order": 4,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "Khói:",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "style": true,
+        "font": "",
+        "fontSize": 16,
+        "color": "#787878",
+        "wrapText": false,
+        "className": "",
+        "value": "payload",
+        "valueType": "msg",
+        "x": 1330,
+        "y": 520,
+        "wires": []
+    },
+    {
+        "id": "85674f5bce093b4f",
+        "type": "ui-chart",
+        "z": "d1bcfc142b428bb6",
+        "group": "eb3572f642abb2d1",
+        "name": "",
+        "label": "Chỉ số khói",
+        "order": 3,
+        "chartType": "line",
+        "category": "topic",
+        "categoryType": "msg",
+        "xAxisLabel": "Time",
+        "xAxisProperty": "x",
+        "xAxisPropertyType": "property",
+        "xAxisType": "time",
+        "xAxisFormat": "",
+        "xAxisFormatType": "auto",
+        "xmin": "",
+        "xmax": "",
+        "yAxisLabel": "Chỉ số khói",
+        "yAxisProperty": "y",
+        "yAxisPropertyType": "property",
+        "ymin": "",
+        "ymax": "",
+        "bins": 10,
+        "action": "append",
+        "stackSeries": false,
+        "pointShape": "circle",
+        "pointRadius": 4,
+        "showLegend": true,
+        "removeOlder": 1,
+        "removeOlderUnit": "3600",
+        "removeOlderPoints": "20",
+        "colors": [
+            "#0095ff",
+            "#ff0000",
+            "#ff7f0e",
+            "#2ca02c",
+            "#a347e1",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "textColor": [
+            "#666666"
+        ],
+        "textColorDefault": true,
+        "gridColor": [
+            "#e5e5e5"
+        ],
+        "gridColorDefault": true,
+        "width": "5",
+        "height": 8,
+        "className": "",
+        "interpolation": "linear",
+        "x": 1310,
+        "y": 120,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "9fbd843c6f67c29b",
+        "type": "function",
+        "z": "d1bcfc142b428bb6",
+        "name": "set X, Y",
+        "func": "let chartData = [];\n\nmsg.payload.forEach(item => {\n    chartData.push({\n        x: item.time,\n        y: item.smoke\n    });\n});\n\nmsg.payload = chartData;\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1140,
+        "y": 120,
+        "wires": [
+            [
+                "85674f5bce093b4f"
+            ]
+        ]
+    },
+    {
+        "id": "97acfad1dfc3d72f",
+        "type": "ui-chart",
+        "z": "d1bcfc142b428bb6",
+        "group": "eb3572f642abb2d1",
+        "name": "",
+        "label": "Nhiệt độ",
+        "order": 1,
+        "chartType": "line",
+        "category": "topic",
+        "categoryType": "msg",
+        "xAxisLabel": "Time",
+        "xAxisProperty": "x",
+        "xAxisPropertyType": "property",
+        "xAxisType": "time",
+        "xAxisFormat": "",
+        "xAxisFormatType": "auto",
+        "xmin": "",
+        "xmax": "",
+        "yAxisLabel": "Nhiệt độ",
+        "yAxisProperty": "y",
+        "yAxisPropertyType": "property",
+        "ymin": "",
+        "ymax": "",
+        "bins": 10,
+        "action": "append",
+        "stackSeries": false,
+        "pointShape": "circle",
+        "pointRadius": 4,
+        "showLegend": true,
+        "removeOlder": 1,
+        "removeOlderUnit": "3600",
+        "removeOlderPoints": "20",
+        "colors": [
+            "#0095ff",
+            "#ff0000",
+            "#ff7f0e",
+            "#2ca02c",
+            "#a347e1",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "textColor": [
+            "#666666"
+        ],
+        "textColorDefault": true,
+        "gridColor": [
+            "#e5e5e5"
+        ],
+        "gridColorDefault": true,
+        "width": "5",
+        "height": 8,
+        "className": "",
+        "interpolation": "linear",
+        "x": 1300,
+        "y": 240,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "1fcbdb62d8e34cca",
+        "type": "ui-text",
+        "z": "d1bcfc142b428bb6",
+        "group": "dcc2d27aa03da79b",
+        "order": 6,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "Trạng thái cửa:",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "style": true,
         "font": "",
         "fontSize": 16,
         "color": "#717171",
@@ -510,8 +887,116 @@
         "className": "",
         "value": "payload",
         "valueType": "msg",
-        "x": 1170,
-        "y": 380,
+        "x": 1360,
+        "y": 580,
+        "wires": []
+    },
+    {
+        "id": "a9553e1edb76c4b8",
+        "type": "ui-text",
+        "z": "d1bcfc142b428bb6",
+        "group": "dcc2d27aa03da79b",
+        "order": 5,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "Rò rỉ nước:",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "style": true,
+        "font": "",
+        "fontSize": 16,
+        "color": "#717171",
+        "wrapText": false,
+        "className": "",
+        "value": "payload",
+        "valueType": "msg",
+        "x": 1350,
+        "y": 640,
+        "wires": []
+    },
+    {
+        "id": "758ec4cc698c41fb",
+        "type": "function",
+        "z": "d1bcfc142b428bb6",
+        "name": "get latest door",
+        "func": "let latest_door = msg.payload[0].door\n\nif (latest_door == 0)\n    msg.payload = \"Đóng\"\nelse if (latest_door == 1)\n    msg.payload = \"Mở\"\nelse \n    msg.payload = \"Lỗi\"\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1160,
+        "y": 580,
+        "wires": [
+            [
+                "1fcbdb62d8e34cca"
+            ]
+        ]
+    },
+    {
+        "id": "3f6abf9f7eb9099d",
+        "type": "function",
+        "z": "d1bcfc142b428bb6",
+        "name": "get latest water",
+        "func": "let latest_water = msg.payload[0].water\n\nif (latest_water == 0)\n    msg.payload = \"Không rò rỉ\"\nelse if (latest_water == 1)\n    msg.payload = \"Rò rỉ\"\nelse\n    msg.payload = \"Không xác định\"\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1160,
+        "y": 640,
+        "wires": [
+            [
+                "a9553e1edb76c4b8"
+            ]
+        ]
+    },
+    {
+        "id": "0c480f4d410c6701",
+        "type": "function",
+        "z": "d1bcfc142b428bb6",
+        "name": "get current time",
+        "func": "let timeString = msg.payload[0].time\n\nlet date = new Date(timeString);\n\n// Kết quả: \"14:22:21\" (Giờ Việt Nam)\nlet timeFormatted = date.toTimeString().slice(0, 8);\n\nmsg.payload = timeFormatted;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1160,
+        "y": 340,
+        "wires": [
+            [
+                "2220e28b1c43c12a"
+            ]
+        ]
+    },
+    {
+        "id": "2220e28b1c43c12a",
+        "type": "ui-text",
+        "z": "d1bcfc142b428bb6",
+        "group": "dcc2d27aa03da79b",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "Thời gian: ",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "style": true,
+        "font": "",
+        "fontSize": "18",
+        "color": "#000000",
+        "wrapText": false,
+        "className": "",
+        "value": "payload",
+        "valueType": "msg",
+        "x": 1340,
+        "y": 340,
         "wires": []
     },
     {
@@ -519,18 +1004,23 @@
         "type": "function",
         "z": "243e818d29de5a71",
         "name": "handler",
-        "func": "let data = msg.payload\n\nmsg.payload = [\n    {\n        saved_time: new Date(),   // giờ nhận message \n        ...data\n    }\n];\nreturn msg;",
+        "func": "let data = msg.payload\n\nmsg.payload = [\n    {\n        saved_time: new Date(),   // giờ lưu message \n        ...data\n    }\n];\n\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 380,
-        "y": 740,
+        "x": 220,
+        "y": 820,
         "wires": [
             [
-                "56feed3d1cbd06b7"
+                "56feed3d1cbd06b7",
+                "7e058193cfecae52",
+                "37b733e940f1b235",
+                "866679caeb6e4a3c",
+                "d9e790adedba8bd5",
+                "80f2f31049c63f05"
             ]
         ]
     },
@@ -546,8 +1036,8 @@
         "maxTimeMS": "0",
         "handleDocId": false,
         "name": "",
-        "x": 540,
-        "y": 740,
+        "x": 440,
+        "y": 800,
         "wires": [
             [
                 "28378bf950e972e3"
@@ -566,8 +1056,8 @@
         "complete": "false",
         "statusVal": "",
         "statusType": "auto",
-        "x": 380,
-        "y": 600,
+        "x": 600,
+        "y": 800,
         "wires": []
     },
     {
@@ -583,24 +1073,24 @@
         "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
-        "x": 140,
-        "y": 600,
+        "x": 220,
+        "y": 680,
         "wires": []
     },
     {
         "id": "4f81bdaf4e3ca241",
         "type": "mqtt in",
         "z": "243e818d29de5a71",
-        "name": "subscribe 51900753/test",
+        "name": "subscribe hivemq 51900753/test",
         "topic": "51900753/test",
         "qos": "0",
         "datatype": "auto-detect",
-        "broker": "824a3a9934fd8045",
+        "broker": "20058de8f04d2f5b",
         "nl": false,
         "rap": true,
         "rh": 0,
         "inputs": 0,
-        "x": 150,
+        "x": 170,
         "y": 740,
         "wires": [
             [
@@ -610,10 +1100,410 @@
         ]
     },
     {
+        "id": "f05c6754b0319dd4",
+        "type": "function",
+        "z": "243e818d29de5a71",
+        "name": "function 2",
+        "func": "let temp = msg.payload[0].temp\nmsg.payload = temp\n\nreturn msg",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 620,
+        "y": 580,
+        "wires": [
+            [
+                "658d3cfab381f95a"
+            ]
+        ]
+    },
+    {
+        "id": "658d3cfab381f95a",
+        "type": "debug",
+        "z": "243e818d29de5a71",
+        "name": "debug 2",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 780,
+        "y": 580,
+        "wires": []
+    },
+    {
+        "id": "7e058193cfecae52",
+        "type": "switch",
+        "z": "243e818d29de5a71",
+        "name": "temp > 30?",
+        "property": "payload[0].temp",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "gt",
+                "v": "30",
+                "vt": "num"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 450,
+        "y": 900,
+        "wires": [
+            [
+                "13cbdefefd879a6a"
+            ]
+        ]
+    },
+    {
+        "id": "7ac69515b51d54ef",
+        "type": "telegram sender",
+        "z": "243e818d29de5a71",
+        "name": "Telegram alert",
+        "bot": "529c2bae123e0c40",
+        "haserroroutput": false,
+        "outputs": 1,
+        "x": 1080,
+        "y": 1020,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "f4760426820a0abe",
+        "type": "function",
+        "z": "243e818d29de5a71",
+        "name": "temp alarm smg",
+        "func": "let temp = msg.payload[0].temp\n\nmsg.payload = {\n    chatId: 8858912481, // Chat ID telegram của người nhận\n    type: 'message',\n    content: `Cảnh báo! \\nNhiệt độ hiện tại: ${temp}` // Nội dung tin nhắn\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 860,
+        "y": 900,
+        "wires": [
+            [
+                "7ac69515b51d54ef"
+            ]
+        ]
+    },
+    {
+        "id": "13cbdefefd879a6a",
+        "type": "delay",
+        "z": "243e818d29de5a71",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "11",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "2",
+        "rateUnits": "minute",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": true,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 660,
+        "y": 900,
+        "wires": [
+            [
+                "f4760426820a0abe"
+            ]
+        ]
+    },
+    {
+        "id": "37b733e940f1b235",
+        "type": "switch",
+        "z": "243e818d29de5a71",
+        "name": "smoke > 400?",
+        "property": "payload[0].smoke",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "gt",
+                "v": "400",
+                "vt": "num"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 460,
+        "y": 960,
+        "wires": [
+            [
+                "5e2e03d4926b5a2c"
+            ]
+        ]
+    },
+    {
+        "id": "866679caeb6e4a3c",
+        "type": "switch",
+        "z": "243e818d29de5a71",
+        "name": "hum > 70?",
+        "property": "payload[0].hum",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "gt",
+                "v": "70",
+                "vt": "num"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 450,
+        "y": 1020,
+        "wires": [
+            [
+                "5a98b4560be7c492"
+            ]
+        ]
+    },
+    {
+        "id": "d9e790adedba8bd5",
+        "type": "switch",
+        "z": "243e818d29de5a71",
+        "name": "door = 1?",
+        "property": "payload[0].door",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "1",
+                "vt": "num"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 440,
+        "y": 1080,
+        "wires": [
+            [
+                "a159cf69864b7754"
+            ]
+        ]
+    },
+    {
+        "id": "80f2f31049c63f05",
+        "type": "switch",
+        "z": "243e818d29de5a71",
+        "name": "water = 1?",
+        "property": "payload[0].water",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "1",
+                "vt": "num"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 450,
+        "y": 1140,
+        "wires": [
+            [
+                "6faf350a33eca39b"
+            ]
+        ]
+    },
+    {
+        "id": "5e2e03d4926b5a2c",
+        "type": "delay",
+        "z": "243e818d29de5a71",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "11",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "2",
+        "rateUnits": "minute",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": true,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 660,
+        "y": 960,
+        "wires": [
+            [
+                "b68ed608460ce414"
+            ]
+        ]
+    },
+    {
+        "id": "5a98b4560be7c492",
+        "type": "delay",
+        "z": "243e818d29de5a71",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "11",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "2",
+        "rateUnits": "minute",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": true,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 660,
+        "y": 1020,
+        "wires": [
+            [
+                "258bf4e8de7b9ae9"
+            ]
+        ]
+    },
+    {
+        "id": "a159cf69864b7754",
+        "type": "delay",
+        "z": "243e818d29de5a71",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "11",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "2",
+        "rateUnits": "minute",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": true,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 660,
+        "y": 1080,
+        "wires": [
+            [
+                "c512281ada9ac7f6"
+            ]
+        ]
+    },
+    {
+        "id": "6faf350a33eca39b",
+        "type": "delay",
+        "z": "243e818d29de5a71",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "11",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "2",
+        "rateUnits": "minute",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": true,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 660,
+        "y": 1140,
+        "wires": [
+            [
+                "cd2bca451f93e307"
+            ]
+        ]
+    },
+    {
+        "id": "b68ed608460ce414",
+        "type": "function",
+        "z": "243e818d29de5a71",
+        "name": "smoke alarm msg",
+        "func": "let smoke = msg.payload[0].smoke\n\nmsg.payload = {\n    chatId: 8858912481, // Chat ID telegram của người nhận\n    type: 'message',\n    content: `Cảnh báo! \\nKhói: ${smoke}` // Nội dung tin nhắn\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 870,
+        "y": 960,
+        "wires": [
+            [
+                "7ac69515b51d54ef"
+            ]
+        ]
+    },
+    {
+        "id": "258bf4e8de7b9ae9",
+        "type": "function",
+        "z": "243e818d29de5a71",
+        "name": "hum alram msg",
+        "func": "let hum = msg.payload[0].hum\n\nmsg.payload = {\n    chatId: 8858912481, // Chat ID telegram của người nhận\n    type: 'message',\n    content: `Cảnh báo! \\nĐộ ẩm hiện tại: ${hum}` // Nội dung tin nhắn\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 860,
+        "y": 1020,
+        "wires": [
+            [
+                "7ac69515b51d54ef"
+            ]
+        ]
+    },
+    {
+        "id": "c512281ada9ac7f6",
+        "type": "function",
+        "z": "243e818d29de5a71",
+        "name": "door alram msg",
+        "func": "\n\nmsg.payload = {\n    chatId: 8858912481, // Chat ID telegram của người nhận\n    type: 'message',\n    content: `Cảnh báo! \\nCửa đang mở` // Nội dung tin nhắn\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 860,
+        "y": 1080,
+        "wires": [
+            [
+                "7ac69515b51d54ef"
+            ]
+        ]
+    },
+    {
+        "id": "cd2bca451f93e307",
+        "type": "function",
+        "z": "243e818d29de5a71",
+        "name": "water alram msg",
+        "func": "\n\nmsg.payload = {\n    chatId: 8858912481, // Chat ID telegram của người nhận\n    type: 'message',\n    content: `Cảnh báo! \\nRò rỉ nước!` // Nội dung tin nhắn\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 860,
+        "y": 1140,
+        "wires": [
+            [
+                "7ac69515b51d54ef"
+            ]
+        ]
+    },
+    {
         "id": "f321c0fd517df1c2",
         "type": "mqtt out",
         "z": "7cf3c98ce507e5f8",
-        "name": "publish 51900753/test",
+        "name": "publish hivemq 51900753/test",
         "topic": "51900753/test",
         "qos": "0",
         "retain": "",
@@ -622,8 +1512,8 @@
         "userProps": "",
         "correl": "",
         "expiry": "",
-        "broker": "824a3a9934fd8045",
-        "x": 600,
+        "broker": "20058de8f04d2f5b",
+        "x": 630,
         "y": 200,
         "wires": []
     },
@@ -632,7 +1522,7 @@
         "type": "function",
         "z": "7cf3c98ce507e5f8",
         "name": "generate mock payload",
-        "func": "let temp = Number((Math.random() * 5 + 25).toFixed(1));\nlet hum = Number((Math.random() * 100).toFixed(1));\nlet water = Math.round(Math.random())\nlet smoke = Math.round(Math.random() * 1000)\nlet door = Math.round(Math.random())\nlet time = new Date()\n\nmsg.payload = { \n    \"temp\": temp,\n    \"hum\": hum,\n    \"water\": water,\n    \"smoke\": smoke,\n    \"door\": door,\n    \"time\": time \n};  \nreturn msg;",
+        "func": "let temp = Number((Math.random() * 15 + 25).toFixed(1));\nlet hum = Number((Math.random() * 100).toFixed(1));\nlet water = Math.round(Math.random())\nlet smoke = Math.round(Math.random() * 1000)\nlet door = Math.round(Math.random())\nlet time = new Date()\n\nmsg.payload = { \n    \"temp\": temp,\n    \"hum\": hum,\n    \"water\": water,\n    \"smoke\": smoke,\n    \"door\": door,\n    \"time\": time \n};  \nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -677,12 +1567,13 @@
         ]
     },
     {
-        "id": "09d43fe2828e60ed",
+        "id": "2795317f4379cf7b",
         "type": "global-config",
         "env": [],
         "modules": {
             "node-red-contrib-mongodb4": "3.4.0",
-            "@flowfuse/node-red-dashboard": "1.33.0"
+            "@flowfuse/node-red-dashboard": "1.33.0",
+            "node-red-contrib-telegrambot": "19.0.3"
         }
     }
 ]
