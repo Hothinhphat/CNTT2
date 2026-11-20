@@ -1037,52 +1037,17 @@
         "handleDocId": false,
         "name": "",
         "x": 440,
-        "y": 800,
+        "y": 820,
         "wires": [
-            [
-                "28378bf950e972e3"
-            ]
+            []
         ]
-    },
-    {
-        "id": "28378bf950e972e3",
-        "type": "debug",
-        "z": "243e818d29de5a71",
-        "name": "debug 7",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "false",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 600,
-        "y": 800,
-        "wires": []
-    },
-    {
-        "id": "1ca986febefc1726",
-        "type": "debug",
-        "z": "243e818d29de5a71",
-        "name": "debug 5",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "payload",
-        "targetType": "msg",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 220,
-        "y": 680,
-        "wires": []
     },
     {
         "id": "4f81bdaf4e3ca241",
         "type": "mqtt in",
         "z": "243e818d29de5a71",
-        "name": "subscribe hivemq 51900753/test",
-        "topic": "51900753/test",
+        "name": "subscribe hivemq server/telemetry",
+        "topic": "server/telemetry",
         "qos": "0",
         "datatype": "auto-detect",
         "broker": "20058de8f04d2f5b",
@@ -1090,50 +1055,13 @@
         "rap": true,
         "rh": 0,
         "inputs": 0,
-        "x": 170,
+        "x": 180,
         "y": 740,
         "wires": [
             [
-                "1ca986febefc1726",
                 "519672fc419b20b8"
             ]
         ]
-    },
-    {
-        "id": "f05c6754b0319dd4",
-        "type": "function",
-        "z": "243e818d29de5a71",
-        "name": "function 2",
-        "func": "let temp = msg.payload[0].temp\nmsg.payload = temp\n\nreturn msg",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 620,
-        "y": 580,
-        "wires": [
-            [
-                "658d3cfab381f95a"
-            ]
-        ]
-    },
-    {
-        "id": "658d3cfab381f95a",
-        "type": "debug",
-        "z": "243e818d29de5a71",
-        "name": "debug 2",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "false",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 780,
-        "y": 580,
-        "wires": []
     },
     {
         "id": "7e058193cfecae52",
@@ -1503,8 +1431,8 @@
         "id": "f321c0fd517df1c2",
         "type": "mqtt out",
         "z": "7cf3c98ce507e5f8",
-        "name": "publish hivemq 51900753/test",
-        "topic": "51900753/test",
+        "name": "publish hivemq server/telemetry",
+        "topic": "server/telemetry",
         "qos": "0",
         "retain": "",
         "respTopic": "",
@@ -1567,7 +1495,7 @@
         ]
     },
     {
-        "id": "2795317f4379cf7b",
+        "id": "d37d5c7a22950b19",
         "type": "global-config",
         "env": [],
         "modules": {
